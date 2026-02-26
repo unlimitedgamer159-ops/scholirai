@@ -108,7 +108,7 @@ const emptyProfile: UserProfile = {
 
 const scholarshipCountries = ['Any', 'India', 'Nigeria', 'Kenya', 'Pakistan', 'Bangladesh', 'United States', 'Canada'];
 const scholarshipStudyLevels = ['Any', 'Bachelor', 'Master', 'PhD', 'Diploma'];
-const scholarshipRegions = ['Any', 'Global', 'Europe', 'North America', 'Asia', 'Africa', 'Oceania'];
+const scholarshipRegions = ['Europe', 'UK', 'USA & Canada', 'Asia', 'Australia & NZ'];
 const scholarshipFields = [
   'Any',
   'Computer Science',
@@ -614,9 +614,11 @@ function ProfilePage({
 }) {
   const [formData, setFormData] = useState<UserProfile>(profile);
   const [filterData, setFilterData] = useState<ScholarshipFilters>(scholarshipFilters);
+  const [isEditing, setIsEditing] = useState(!hasCompletedProfile(profile));
 
   useEffect(() => {
     setFormData(profile);
+    setIsEditing(!hasCompletedProfile(profile));
   }, [profile]);
 
   useEffect(() => {
@@ -631,6 +633,7 @@ function ProfilePage({
     e.preventDefault();
     onSaveScholarshipFilters(filterData);
     onSave(formData);
+    setIsEditing(false);
   };
 
   return (
@@ -638,11 +641,33 @@ function ProfilePage({
       <div className="bg-white rounded-2xl border border-emerald-100 shadow-xl p-8">
         <h1 className="text-xl font-bold text-slate-900">Professional Profile</h1>
         <p className="text-sm text-slate-600 mt-1 mb-6">Complete this first. It is saved locally and automatically opens your personalized dashboard with scholarship recommendations.</p>
-        <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={submitProfile}>
+
+        {hasCompletedProfile(profile) && !isEditing && (
+          <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50/40 p-5">
+            <h2 className="text-sm font-semibold text-slate-900">Saved profile details</h2>
+            <p className="text-xs text-slate-600 mt-1">Your details are saved. You only need to fill this once unless you want to update something.</p>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-700">
+              <p><span className="font-medium">Full name:</span> {profile.fullName || 'Not set'}</p>
+              <p><span className="font-medium">Origin country:</span> {profile.originCountry || 'Not set'}</p>
+              <p><span className="font-medium">Target major:</span> {profile.targetMajor || 'Not set'}</p>
+              <p><span className="font-medium">Target region:</span> {profile.targetRegion || 'Not set'}</p>
+              <p><span className="font-medium">Study level:</span> {profile.studyLevel || 'Not set'}</p>
+              <p><span className="font-medium">GPA:</span> {profile.gpa || 'Not set'}</p>
+            </div>
+            <button type="button" onClick={() => setIsEditing(true)} className="mt-4 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-semibold text-emerald-800 hover:bg-emerald-50">
+              Edit profile details
+            </button>
+          </div>
+        )}
+
+        {(isEditing || !hasCompletedProfile(profile)) && <form className="grid grid-cols-1 md:grid-cols-2 gap-4" onSubmit={submitProfile}>
           <input placeholder="Full name" className="rounded-xl border border-slate-200 px-4 py-2.5" value={formData.fullName} onChange={(e) => onChangeField('fullName', e.target.value)} required />
           <input placeholder="Origin country" className="rounded-xl border border-slate-200 px-4 py-2.5" value={formData.originCountry} onChange={(e) => onChangeField('originCountry', e.target.value)} required />
           <input placeholder="Target major" className="rounded-xl border border-slate-200 px-4 py-2.5" value={formData.targetMajor} onChange={(e) => onChangeField('targetMajor', e.target.value)} required />
-          <input placeholder="Target region" className="rounded-xl border border-slate-200 px-4 py-2.5" value={formData.targetRegion} onChange={(e) => onChangeField('targetRegion', e.target.value)} />
+          <select className="rounded-xl border border-slate-200 px-4 py-2.5" value={formData.targetRegion} onChange={(e) => onChangeField('targetRegion', e.target.value)}>
+            <option value="">Target region</option>
+            {scholarshipRegions.map((region) => <option key={region} value={region}>{region}</option>)}
+          </select>
           <input placeholder="Study level (Bachelor/Master/PhD)" className="rounded-xl border border-slate-200 px-4 py-2.5" value={formData.studyLevel} onChange={(e) => onChangeField('studyLevel', e.target.value)} required />
           <input placeholder="GPA" className="rounded-xl border border-slate-200 px-4 py-2.5" value={formData.gpa} onChange={(e) => onChangeField('gpa', e.target.value)} />
           <input placeholder="SAT/ACT score" className="rounded-xl border border-slate-200 px-4 py-2.5" value={formData.sat} onChange={(e) => onChangeField('sat', e.target.value)} />
@@ -667,7 +692,7 @@ function ProfilePage({
             </div>
           </div>
           <button type="submit" className="md:col-span-2 rounded-xl bg-emerald-700 text-white py-3 font-semibold hover:bg-emerald-800">Save Profile & Open Dashboard</button>
-        </form>
+        </form>}
       </div>
     </main>
   );
